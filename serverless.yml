@@ -1,0 +1,74 @@
+service: aws-node-image-restobares
+
+custom:
+  dotenv:
+    path: ./.env
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: us-east-1
+  environment:
+    S3_BUCKET_NAME: "bucketpngimages"
+    MONGODB_URI: "mongodb+srv://jeissonarcadio:Medellin2014@miclusterpng.n6hccvb.mongodb.net/Images"
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - s3:*
+      Resource: "*"
+
+functions:
+  app:
+    handler: app.handler
+    events:
+      - http: ANY /
+      - http: 'ANY /{proxy+}'
+
+  getImage:
+    handler: controller/getImage.handler
+    events:
+      - http:
+          path: getImage/latest
+          method: get
+          cors: ${file(./cors.yml)}
+
+  getImagesByDate:
+    handler: controller/getImagesByDate.handler
+    events:
+      - http:
+          path: imagesByDate
+          method: post
+          cors: ${file(./cors.yml)}
+
+  getImagesCountByHours:
+    handler: controller/getImagesCountByHours.handler
+    events:
+      - http:
+          path: getImagesCountByHours
+          method: get
+          cors: ${file(./cors.yml)}
+
+plugins:
+  - serverless-offline
+  - serverless-dotenv-plugin
+
+resources:
+  Resources:
+    ImagesBucket:
+      Type: 'AWS::S3::Bucket'
+      Properties:
+        BucketName: "bucketpngimages"
+        CorsConfiguration:
+          CorsRules:
+            - AllowedOrigins:
+                - '*'
+              AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+                - HEAD
+              MaxAge: 3000

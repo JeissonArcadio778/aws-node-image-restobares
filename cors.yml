@@ -1,0 +1,5 @@
+origin: '*'
+headers: 
+  - Content-Type
+  - X-Api-Key
+allowCredentials: true
